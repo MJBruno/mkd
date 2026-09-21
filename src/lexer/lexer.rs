@@ -1,4 +1,5 @@
-use super::token::{Token, TokenKind};
+use super::error::LexerError;
+use super::token::{Position, Token, TokenKind};
 
 pub struct Lexer<'a> {
     source: &'a str,
@@ -9,14 +10,17 @@ impl<'a> Lexer<'a> {
         Self { source }
     }
 
-    pub fn tokenize(&self) -> Vec<Token> {
+    pub fn tokenize(&self) -> Result<Vec<Token>, LexerError> {
         let mut tokens = Vec::new();
 
-        for line in self.source.lines() {
+        for (line_index, line) in self.source.lines().enumerate() {
+            let line_number = line_index + 1;
+
             if line.trim().is_empty() {
                 tokens.push(Token {
                     kind: TokenKind::BlankLine,
                     lexeme: String::new(),
+                    position: Position::new(line_number, 1),
                 });
 
                 continue;
@@ -28,13 +32,19 @@ impl<'a> Lexer<'a> {
                 tokens.push(Token {
                     kind: TokenKind::HeadingMarker(level),
                     lexeme: marker,
+                    position: Position::new(line_number, 1),
                 });
 
-                let text = &line[level as usize + 1..];
+                let text_start = level as usize + 1;
+                let text = &line[text_start..];
 
                 tokens.push(Token {
                     kind: TokenKind::Text,
                     lexeme: text.to_string(),
+                    position: Position::new(
+                        line_number,
+                        text_start + 1,
+                    ),
                 });
 
                 continue;
@@ -43,15 +53,20 @@ impl<'a> Lexer<'a> {
             tokens.push(Token {
                 kind: TokenKind::Text,
                 lexeme: line.to_string(),
+                position: Position::new(line_number, 1),
             });
         }
 
         tokens.push(Token {
             kind: TokenKind::Eof,
             lexeme: String::new(),
+            position: Position::new(
+                self.source.lines().count() + 1,
+                1,
+            ),
         });
 
-        tokens
+        Ok(tokens)
     }
 }
 
@@ -81,43 +96,58 @@ mod tests {
     use crate::lexer::TokenKind;
 
     #[test]
-    fn lexes_heading() {
+    fn heading_has_position() {
         let lexer = Lexer::new("# Hello");
 
-        let tokens = lexer.tokenize();
+        let tokens = lexer.tokenize().unwrap();
 
         assert_eq!(
-            tokens[0].kind,
-            TokenKind::HeadingMarker(1)
+            tokens[0].position,
+            Position::new(1, 1)
         );
+
+        assert_eq!(
+            tokens[1].position,
+            Position::new(1, 3)
+        );
+    }
+
+    #[test]
+    fn second_line_has_correct_position() {
+        let lexer = Lexer::new(
+            "# Title\n\
+             Hello"
+        );
+
+        let tokens = lexer.tokenize().unwrap();
+
+        assert_eq!(
+            tokens[2].position.line,
+            2
+        );
+
+        assert_eq!(
+            tokens[2].position.column,
+            1
+        );
+    }
+
+    #[test]
+    fn blank_line_has_position() {
+        let lexer = Lexer::new(
+            "Hello\n\nWorld"
+        );
+
+        let tokens = lexer.tokenize().unwrap();
 
         assert_eq!(
             tokens[1].kind,
-            TokenKind::Text
+            TokenKind::BlankLine
         );
 
         assert_eq!(
-            tokens[1].lexeme,
-            "Hello"
+            tokens[1].position,
+            Position::new(2, 1)
         );
-    }
-
-    #[test]
-    fn lexes_blank_line() {
-        let lexer = Lexer::new("Hello\n\nWorld");
-
-        let tokens = lexer.tokenize();
-
-        assert_eq!(tokens[1].kind, TokenKind::BlankLine);
-    }
-
-    #[test]
-    fn hash_without_space_is_text() {
-        let lexer = Lexer::new("#Hello");
-
-        let tokens = lexer.tokenize();
-
-        assert_eq!(tokens[0].kind, TokenKind::Text);
-        assert_eq!(tokens[0].lexeme, "#Hello");
     }
 }

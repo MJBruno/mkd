@@ -32,10 +32,6 @@ impl Parser {
                 }
 
                 TokenKind::Eof => break,
-
-                TokenKind::Newline => {
-                    self.advance();
-                }
             }
         }
 
@@ -54,13 +50,11 @@ impl Parser {
         let mut lines = Vec::new();
 
         while !self.is_at_end() {
-            match self.peek().kind {
-                TokenKind::Text => {
-                    lines.push(self.advance().lexeme);
-                }
-
-                _ => break,
+            if !matches!(self.peek().kind, TokenKind::Text) {
+                break;
             }
+
+            lines.push(self.advance().lexeme);
         }
 
         Block::Paragraph(lines.join("\n"))
