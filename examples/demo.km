@@ -1,0 +1,30 @@
+---
+title: Kastel Markup Demo
+lang: fr
+---
+
+## Kastel Markup {#kastel-markup}
+
+Bienvenue dans **Kastel Markup**.
+
+- Lexer
+- Parser
+- AST
+
+> Un document déterministe.
+
+| Fonctionnalité | Statut |
+| --- | --- |
+| Lexer | OK |
+| Parser | OK |
+| HTML | OK |
+
+```rust
+fn main() {
+    println!("Hello, Kastel!");
+}
+```
+
+::: note
+Le renderer HTML est indépendant du parser.
+:::

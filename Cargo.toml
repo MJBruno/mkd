@@ -1,6 +1,16 @@
 [package]
-name = "mkd"
+name = "kastel-markup"
 version = "0.1.0"
 edition = "2024"
+description = "A deterministic Markdown-like markup parser for Kastel"
+license = "MIT"
+
+[lib]
+name = "kastel_markup"
+path = "src/lib.rs"
+
+[[bin]]
+name = "km"
+path = "src/main.rs"
 
 [dependencies]

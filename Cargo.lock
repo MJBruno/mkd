@@ -3,5 +3,5 @@
 version = 4
 
 [[package]]
-name = "mkd"
+name = "kastel-markup"
 version = "0.1.0"

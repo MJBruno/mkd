@@ -1,16 +1,24 @@
 use super::token::Position;
+use std::fmt;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct LexerError {
-    pub message: String,
-    pub position: Position,
+pub enum LexerError {
+    InvalidCharacter {
+        character: char,
+        position: Position,
+    },
 }
 
-impl LexerError {
-    pub fn new(message: impl Into<String>, position: Position) -> Self {
-        Self {
-            message: message.into(),
-            position,
+impl fmt::Display for LexerError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::InvalidCharacter { character, position } => write!(
+                f,
+                "invalid character {:?} at {}:{}",
+                character, position.line, position.column
+            ),
         }
     }
 }
+
+impl std::error::Error for LexerError {}

@@ -5,9 +5,54 @@ pub struct Position {
 }
 
 impl Position {
-    pub fn new(line: usize, column: usize) -> Self {
+    pub const fn new(line: usize, column: usize) -> Self {
         Self { line, column }
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TokenKind {
+    Hash,
+
+    Star,
+    DoubleStar,
+
+    Tilde,
+    DoubleTilde,
+
+    Underscore,
+    DoubleUnderscore,
+
+    Backtick,
+
+    Backslash,
+
+    LeftBracket,
+    RightBracket,
+
+    LeftParen,
+    RightParen,
+
+    LeftBrace,
+    RightBrace,
+
+    Pipe,
+    Colon,
+
+    Exclamation,
+
+    Minus,
+    Plus,
+    Dot,
+
+    GreaterThan,
+    LessThan,
+
+    Indent(usize),
+
+    Text,
+    Newline,
+    Eof,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -17,10 +62,12 @@ pub struct Token {
     pub position: Position,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TokenKind {
-    HeadingMarker(u8),
-    Text,
-    BlankLine,
-    Eof,
+impl Token {
+    pub fn new(kind: TokenKind, lexeme: impl Into<String>, position: Position) -> Self {
+        Self {
+            kind,
+            lexeme: lexeme.into(),
+            position,
+        }
+    }
 }
